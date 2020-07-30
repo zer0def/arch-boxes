@@ -4,6 +4,7 @@ default:
 stages:
   - lint
   - build
+  - test
   - publish
 
 shellcheck:
@@ -72,6 +73,65 @@ build:virtualbox:
       - "Arch-Linux-x86_64-virtualbox-*.box"
     expire_in: 2d
   resource_group: vm-build
+
+test-vbox-reflector:
+  stage: test
+  tags:
+    - secure-virtualbox
+  before_script:
+    - pacman -Syu --needed --noconfirm virtualbox vagrant
+  script:
+    - vagrant box add Arch-Linux-x86_64-virtualbox-*.box --name archlinux --force
+    - vagrant init archlinux
+    - vagrant up --provider=virtualbox
+    - vagrant ssh -c "cat /etc/pacman.d/mirrorlist" | grep Reflector
+  resource_group: vm-build
+
+test-qemu-reflector:
+  stage: test
+  tags:
+    - secure-kvm
+  before_script:
+    - pacman -Syu --needed --noconfirm qemu-headless vagrant
+    - systemctl start libvirtd.service
+    - vagrant plugin install vagrant-libvirt
+  script:
+    - vagrant box add Arch-Linux-x86_64-libvirt-*.box --name archlinux --force
+    - vagrant init archlinux
+    - vagrant up --provider=libvirt
+    - vagrant ssh -c "cat /etc/pacman.d/mirrorlist" | grep Reflector
+  resource_group: vm-build
+
+test-vbox-network:
+  stage: test
+  variables:
+    VAGRANT_VAGRANTFILE: "network.Vagrantfile"
+  tags:
+    - secure-virtualbox
+  before_script:
+    - pacman -Syu --needed --noconfirm virtualbox vagrant
+    - vagrant box add Arch-Linux-x86_64-virtualbox-*.box --name archlinux --force
+    - cd test
+  script:
+    - vagrant up --provider=virtualbox
+    - vagrant ssh -c "ip addr" | grep 192.168.0.42
+  resource_group: vm-build
+
+test-qemu-network:
+  stage: test
+  variables:
+    VAGRANT_VAGRANTFILE: "network.Vagrantfile"
+  tags:
+    - secure-kvm
+  before_script:
+    - pacman -Syu --needed --noconfirm qemu-headless vagrant
+    - vagrant plugin install vagrant-libvirt
+    - vagrant box add Arch-Linux-x86_64-libvirt-*.box --name archlinux --force
+    - cd test
+  script:
+    - vagrant up --provider=libvirt
+    - vagrant ssh -c "ip addr" | grep 192.168.0.42
+  resource_group: vm-build  
 
 publish:
   stage: publish
