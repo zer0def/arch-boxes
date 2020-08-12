@@ -10,7 +10,6 @@ different providers and post-processors. Check the providers or post-processor s
 which are currently supported.
 
 ## Dependencies
-
 You'll need the following dependencies:
 
 * packer (for basic usage)
@@ -19,7 +18,7 @@ You'll need the following dependencies:
 * virtualbox (for virtualbox support)
 * VMware Workstation Pro (for vmware support)
 
-## variables
+## Variables
 Here is an overview over all variables you can set in `vagrant.json` or
 `local.json`:
 
@@ -33,17 +32,17 @@ Here is an overview over all variables you can set in `vagrant.json` or
 * `memory`: this specifies the size of the RAM in bytes.
 * `cpus`: this specifies the number of cores for your VM.
 * `headless`: this sets GUI on or off.
-* `vagrant_cloud_token`: here you can specify the vagrant cloud token for 
-  uploading your box to the vagrantcloud. If you don't have a vagrant cloud 
+* `vagrant_cloud_token`: here you can specify the vagrant cloud token for
+  uploading your box to the vagrantcloud. If you don't have a vagrant cloud
   token you can ignore this variable. Without a token the boxes will be
   built, but the upload step step will fail.
 * `write_zeroes`: this variable is empty. if you set any string in this
-  variable it will fill the box with zeros to reduce the size. **DO NOT
-  use this if you are running a SSD. It will harm your SSDs lifetime**
+  variable it will fill the box with zeros to reduce the size. *NOTE: This
+  may overly tax your SSD's lifetime.*
 * `boot_wait`: this specifies the time packer should wait for booting up
   the ISO before entering any command.
 
-## how to start the build process locally
+## How to start the build process locally
 If you want to build the boxes locally without uploading them to the Vagrant
 cloud you need to edit the `local.json` before you start the build. set the
 right `iso_url` and the right `iso_checksum_url`. Then you can start the build
@@ -51,20 +50,42 @@ for virtualbox only with the following command:
 
 `packer build -only=virtualbox-iso local.json`
 
-## how to start the build process for official builds
+## How to start the build process for official builds
 The official builds are done on our Arch Linux Buildserver.
 
 `packer build vagrant.json`
 
-## providers
+## Providers
 
 * virtualbox-iso
 * qemu/libvirt
 * vmware-iso
 
-## post-processors
+## Post-processors
 
 * vagrant
+
+## Development workflow
+Merge requests and general development shall be made on the `master` branch.
+For security reasons, we're not allowing our CI runners on other branches than
+`master` or `release` so MRs won't properly run their CI.
+
+Therefore, the development flow is:
+
+1. Make a MR against `master`.
+2. After code review, a maintainer locally needs to build the changes.
+3. The maintainer then needs to merge the changes to `master`.
+
+## Release workflow
+Releases are done automatically via [GitLab CI
+schedule](https://gitlab.archlinux.org/archlinux/arch-boxes/-/pipeline_schedules).
+No manual intervention is required or desired.
+
+The release flow is:
+
+1. A maintainer makes a MR from `master` against `release`.
+2. The MR is merged on GitLab.
+3. A release is done automatically and regularly from the `release` branch.
 
 ## Troubleshooting
 
