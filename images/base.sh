@@ -15,6 +15,9 @@ function pre() {
   mkswap "${MOUNT}/swap/swapfile"
   echo -e "/swap/swapfile none swap defaults 0 0" >>"${MOUNT}/etc/fstab"
 
+  # avoid `root=/dev/loop0p2` kernel param
+  echo "GRUB_DEVICE=\"/dev/disk/by-uuid/$(blkid -o value -s UUID "${LOOPDEV}p2")\"" >>"${MOUNT}/etc/default/grub"
+
   sed -i -e 's/^#\(en_US.UTF-8\)/\1/' "${MOUNT}/etc/locale.gen"
   arch-chroot "${MOUNT}" /usr/bin/locale-gen
   arch-chroot "${MOUNT}" /usr/bin/systemd-firstboot --locale=en_US.UTF-8 --timezone=UTC --hostname=archlinux --keymap=us

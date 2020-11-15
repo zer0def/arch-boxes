@@ -1,0 +1,8 @@
+{
+  "default-runtime": "runc",
+  "runtimes": {
+    "kata": {
+      "path": "/usr/bin/kata-runtime"
+    }
+  }
+}
